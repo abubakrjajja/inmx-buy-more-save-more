@@ -24,10 +24,18 @@ The version check in step 3 exists because of a specific failure: if the tag say
 1.0.1 and the plugin header still says 1.0.0, WordPress installs the update,
 re-reads 1.0.0, and offers the same update again on every check, forever.
 
+## Credentials
+
+**The repository is public, so sites need no credentials at all.** Nothing to
+install, nothing to rotate, nothing to leak. This is the reason to keep it that
+way unless there is a concrete reason not to.
+
+Everything in the rest of this section applies only if the repo is ever made
+private again.
+
 ## Private repository setup
 
-A public repo needs no credentials at all. For a private repo, each site needs a
-read-only token.
+For a private repo, each site needs a read-only token.
 
 ### Create the token
 

@@ -67,8 +67,14 @@ Leave the perk message blank to get an auto-generated one.
 ## Updates
 
 Updates arrive through the normal WordPress Plugins screen, served from GitHub
-Releases. See [docs/UPDATES.md](docs/UPDATES.md) for the token setup on a
-private repo, how to ship a release, and how to turn updates off on staging.
+Releases. The repository is public, so no site needs any credential.
+
+Verified end to end on a live store: a site on 1.0.0 was shown 1.1.0 as an
+available update, downloaded it from the release asset, and installed it into
+the correct folder with no intervention.
+
+See [docs/UPDATES.md](docs/UPDATES.md) for how to ship a release, how to turn
+updates off on staging, and what changes if the repo is ever made private.
 
 ## Layout
 
