@@ -81,12 +81,10 @@ function inmx_save_order_discounts( WC_Order $order ): void {
 		}
 
 		$price = (float) ( $tier['price_per_item'] ?? 0 );
-		if ( $price <= 0 ) {
-			continue;
-		}
 
 		$total_discount = 0.0;
 		$items_count    = 0;
+		$revenue        = 0.0;
 
 		foreach ( $order->get_items() as $item ) {
 			$pid = (int) $item->get_product_id();
@@ -96,19 +94,49 @@ function inmx_save_order_discounts( WC_Order $order ): void {
 			if ( ! inmx_in_cat( $pid, $cat_id ) ) {
 				continue;
 			}
-			$qty             = (int) $item->get_quantity();
-			$total_discount += max( 0.0, (float) $item->get_subtotal() - ( $price * $qty ) );
-			$items_count    += $qty;
+			$qty          = (int) $item->get_quantity();
+			$line         = (float) $item->get_subtotal();
+			$items_count += $qty;
+			$revenue     += $line;
+			if ( $price > 0 ) {
+				$total_discount += max( 0.0, $line - ( $price * $qty ) );
+			}
 		}
 
-		if ( $total_discount > 0 ) {
-			$bundles[] = [
-				'offer_name'  => ! empty( $offer['name'] ) ? $offer['name'] : 'Bundle Offer',
-				'discount'    => round( $total_discount, 2 ),
-				'tier_qty'    => (int) $tier['qty'],
-				'items_count' => $items_count,
-			];
+		// Nothing from this offer's category in the order: nothing to say about it.
+		if ( $items_count < 1 ) {
+			continue;
 		}
+
+		// Where in the ladder did this order land, and how close was the next rung?
+		//
+		// CHANGED IN 1.2.0: recorded for EVERY order containing the category, not
+		// only ones that earned a discount. The old gate meant an order that
+		// bought a single item - precisely the upsell that did NOT work - was
+		// never recorded, so there was no denominator to measure success against
+		// and the report could only ever show money given away.
+		$tiers      = $offer['tiers'] ?? [];
+		$tier_index = 0;
+		foreach ( $tiers as $i => $t ) {
+			if ( $items_count >= (int) ( $t['qty'] ?? 0 ) ) {
+				$tier_index = $i + 1;
+			}
+		}
+		$next          = inmx_next_tier( $items_count, $tiers );
+		$next_tier_qty = $next ? (int) $next['qty'] : 0;
+
+		$bundles[] = [
+			'offer_name'    => ! empty( $offer['name'] ) ? $offer['name'] : 'Bundle Offer',
+			'category_id'   => $cat_id,
+			'discount'      => round( $total_discount, 2 ),
+			'revenue'       => round( $revenue - $total_discount, 2 ),
+			'tier_qty'      => $tier_index > 0 ? (int) $tier['qty'] : 0,
+			'tier_index'    => $tier_index,
+			'tier_count'    => count( $tiers ),
+			'items_count'   => $items_count,
+			'next_tier_qty' => $next_tier_qty,
+			'units_to_next' => $next_tier_qty ? max( 0, $next_tier_qty - $items_count ) : 0,
+		];
 	}
 
 	if ( $bundles ) {

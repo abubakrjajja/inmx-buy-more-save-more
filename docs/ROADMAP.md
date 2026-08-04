@@ -50,7 +50,7 @@ if ( isset( $cache[ $key ] ) ) return $cache[ $key ];
 cross into tier 2 in one update, and confirm the line total matches tier 2 in the
 same request - not on the next page load.
 
-## 2. Analytics loads every matching order into memory
+## ~~2. Analytics loads every matching order into memory~~ FIXED IN 1.2.0
 
 `includes/admin/analytics.php`
 

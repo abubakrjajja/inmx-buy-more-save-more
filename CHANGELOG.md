@@ -1,5 +1,53 @@
 # Changelog
 
+## 1.2.0 - 2026-08-04
+
+### Analytics now measures whether the upsell worked
+
+The report led with **Total Savings Given** and **Avg Savings / Order**. Both are
+cost figures. This plugin exists to move customers up the quantity ladder, so a
+report whose headline is money given away is pointed the wrong way - and on a
+store where the first tier gives no discount it simply read zero.
+
+It now leads with:
+
+- **Bundle orders** - orders containing an offer category
+- **Upsold past tier 1** - the share that climbed at least one rung, which is the
+  plugin's actual job
+- **Avg units / order** - the number the offer is trying to raise
+- **Avg bundle revenue** - per order, after the discount
+
+Per offer there is a tier ladder showing where orders landed, including a **No
+tier** row for orders that qualified for nothing. Discount given is still shown,
+in small text at the bottom, labelled as the cost of the offer rather than its
+result.
+
+### Near-miss orders are now visible
+
+Orders that finished exactly one item short of the next tier are counted and
+called out. Those are the ones a better nudge on the cart or checkout widget has
+the most to work with, and nothing in the old report surfaced them.
+
+### Fixed: tier-1 orders were never recorded
+
+The order record was written only when a discount was earned, so an order that
+bought a single item - precisely the upsell that did **not** work - left no
+trace. There was no denominator, so no success rate could be calculated. A row
+is now written for every order containing an offer category, carrying the tier
+reached, units, revenue and distance to the next tier.
+
+Orders placed before 1.2.0 are counted in the totals but sit outside the ladder,
+labelled as such, rather than being guessed at.
+
+### Fixed: the report loaded every matching order
+
+It called `wc_get_orders()` with `limit => -1` and `return => objects`,
+instantiating every matching order in memory. Everything shown comes from one
+meta value per order, so it is now a single indexed query against the order meta
+table, with both HPOS and legacy post-meta storage handled.
+
+---
+
 ## 1.1.0 - 2026-08-04
 
 ### The saving is now a named discount line, not a silent reprice
