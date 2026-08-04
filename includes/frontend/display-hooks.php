@@ -105,11 +105,48 @@ add_filter(
 	2
 );
 
+/**
+ * Gift rows show the product's own name, with a "Free Gift" line beneath it.
+ *
+ * Until 1.1.0 this replaced the name outright, so both the cart and the side
+ * cart showed a row reading "Free Gift" over "1 x FREE" with no indication of
+ * what the customer was actually being given.
+ */
 add_filter(
 	'woocommerce_cart_item_name',
 	function ( $name, array $item ) {
-		return in_array( (int) $item['product_id'], inmx_gift_ids(), true )
-				? '<span class="inmx-gift-label">&#127873; Free Gift</span>' : $name;
+
+		$pid = (int) $item['product_id'];
+		if ( ! in_array( $pid, inmx_gift_ids(), true ) ) {
+			return $name;
+		}
+
+		$title = get_the_title( $pid );
+		if ( ! $title ) {
+			$title = wp_strip_all_tags( (string) $name );
+		}
+
+		return '<span class="inmx-gift-name">' . esc_html( $title ) . '</span>'
+			. '<span class="inmx-gift-label">&#127873; Free Gift</span>';
+	},
+	10,
+	2
+);
+
+/**
+ * Same treatment inside the Woodmart / WooCommerce side cart, which renders
+ * item names through its own filter rather than woocommerce_cart_item_name.
+ */
+add_filter(
+	'woocommerce_widget_cart_item_quantity',
+	function ( $html, array $item ) {
+
+		if ( ! in_array( (int) $item['product_id'], inmx_gift_ids(), true ) ) {
+			return $html;
+		}
+
+		return '<span class="quantity">' . (int) $item['quantity']
+			. ' &times; <span class="inmx-free-tag">FREE</span></span>';
 	},
 	10,
 	2

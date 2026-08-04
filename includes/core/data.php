@@ -153,16 +153,35 @@ function inmx_in_cat( int $pid, int $cat_id ): bool {
  * Gift products (from any tier) are excluded from counts.
  */
 function inmx_qty_map( ?WC_Cart $cart = null ): array {
-	static $map = null;
-	if ( null !== $map ) {
-		return $map;
-	}
+	static $cache = [];
 
 	$cart = $cart ?? WC()->cart;
-	$map  = [];
 	if ( ! $cart instanceof WC_Cart ) {
-		return $map;
+		return [];
 	}
+
+	// Keyed on cart contents, not cached as a single value.
+	//
+	// Until 1.1.0 this held one map for the whole request and ignored $cart
+	// after the first call. WooCommerce runs calculate_totals() more than once
+	// per request in ordinary flows - a quantity update, and again after this
+	// plugin adds or removes a gift - so the second pass read a map built from
+	// the pre-change cart and could select the wrong tier. That is a silently
+	// wrong price rather than an error, which is why it survived so long.
+	$signature = md5(
+		(string) wp_json_encode(
+			array_map(
+				static fn( $i ) => [ (int) $i['product_id'], (int) $i['variation_id'], (int) $i['quantity'] ],
+				array_values( $cart->get_cart() )
+			)
+		)
+	);
+
+	if ( isset( $cache[ $signature ] ) ) {
+		return $cache[ $signature ];
+	}
+
+	$map = [];
 
 	$gift_ids = inmx_gift_ids();
 	$cat_ids  = array_unique(
@@ -187,7 +206,108 @@ function inmx_qty_map( ?WC_Cart $cart = null ): array {
 			}
 		}
 	}
+
+	$cache[ $signature ] = $map;
 	return $map;
+}
+
+/**
+ * Every offer that currently has an active tier, with the discount it earns.
+ *
+ * One place decides what a bundle is worth. The cart fee, the shipping rule and
+ * the figure stored on the order all read from here, so they cannot drift apart.
+ *
+ * The discount is measured against what the customer would otherwise pay - the
+ * line subtotal at the product's own price - not against the configured regular
+ * price. Those differ whenever a product is already on sale, and charging from
+ * the wrong baseline is how a bundle ends up quietly costing more than it should.
+ *
+ * @param WC_Cart $cart Cart to inspect.
+ * @return array<int,array{offer:array,tier:array,cat_id:int,discount:float,label:string}>
+ */
+function inmx_active_bundles( WC_Cart $cart ): array {
+
+	$map      = inmx_qty_map( $cart );
+	$gift_ids = inmx_gift_ids();
+	$bundles  = [];
+
+	foreach ( inmx_get_offers() as $offer ) {
+
+		$cat_id = (int) ( $offer['category_id'] ?? 0 );
+		if ( ! $cat_id ) {
+			continue;
+		}
+
+		$tier = inmx_active_tier( $map[ $cat_id ] ?? 0, $offer['tiers'] ?? [] );
+		if ( ! $tier ) {
+			continue;
+		}
+
+		$tier_price = (float) ( $tier['price_per_item'] ?? 0 );
+		$discount   = 0.0;
+
+		if ( $tier_price > 0 ) {
+			foreach ( $cart->get_cart() as $item ) {
+				$pid = (int) $item['product_id'];
+				if ( in_array( $pid, $gift_ids, true ) ) {
+					continue;
+				}
+				if ( ! inmx_in_cat( $pid, $cat_id ) ) {
+					continue;
+				}
+				$qty      = (int) $item['quantity'];
+				$full     = isset( $item['line_subtotal'] )
+							? (float) $item['line_subtotal']
+							: (float) $item['data']->get_price() * $qty;
+				$discount += max( 0.0, $full - ( $tier_price * $qty ) );
+			}
+		}
+
+		$bundles[] = [
+			'offer'    => $offer,
+			'tier'     => $tier,
+			'cat_id'   => $cat_id,
+			'discount' => round( $discount, 2 ),
+			'label'    => inmx_bundle_label( $offer, $tier, $cat_id ),
+		];
+	}
+
+	return $bundles;
+}
+
+/**
+ * The customer-facing name for an active bundle, e.g. "AZAADI SALE: Any 2 Hand Bindis".
+ *
+ * This string is what appears on the cart, the checkout, the order and every
+ * order email, so it is built once and reused rather than assembled per surface.
+ *
+ * @param array $offer  Offer configuration.
+ * @param array $tier   Active tier.
+ * @param int   $cat_id Offer category.
+ */
+function inmx_bundle_label( array $offer, array $tier, int $cat_id ): string {
+
+	$pack = trim( (string) ( $tier['pack_label'] ?? '' ) );
+
+	if ( '' === $pack ) {
+		$term = get_term( $cat_id, 'product_cat' );
+		$name = ( $term && ! is_wp_error( $term ) ) ? $term->name : 'items';
+		$pack = 'Any ' . (int) ( $tier['qty'] ?? 1 ) . ' ' . ucfirst( $name );
+	}
+
+	$prefix = trim( (string) ( $offer['name'] ?? '' ) );
+	if ( '' === $prefix ) {
+		$prefix = 'Discount';
+	}
+
+	/**
+	 * Filter the discount line label.
+	 *
+	 * @param string $label Composed label.
+	 * @param array  $offer Offer configuration.
+	 * @param array  $tier  Active tier.
+	 */
+	return (string) apply_filters( 'inmx_bmsm_discount_label', $prefix . ': ' . $pack, $offer, $tier );
 }
 
 /**

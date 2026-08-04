@@ -1,4 +1,9 @@
-# Known issues, deliberately not fixed in 1.0.0
+# Known issues
+
+> Items 1 and 5 below were **fixed in 1.1.0** and are struck through.
+> See CHANGELOG.md.
+
+# Original list, deliberately not fixed in 1.0.0
 
 1.0.0 is a pure repackage of the WPCode snippet. Behaviour is identical on
 purpose: if something breaks after installing it, the cause is packaging, not
@@ -7,7 +12,7 @@ lands as its own change with its own before/after test.
 
 ---
 
-## 1. `inmx_qty_map()` goes stale within a request - pricing correctness
+## ~~1. `inmx_qty_map()` goes stale within a request~~ FIXED IN 1.1.0
 
 `includes/core/data.php`
 
@@ -83,7 +88,7 @@ nonce before firing `woocommerce_settings_save_inmx_bundle`, so the handler is
 unreachable without one. Recorded here so nobody "fixes" it by adding a second
 nonce check that breaks saving.
 
-## 5. Mini-cart repositioning is theme-coupled
+## 5. Mini-cart repositioning is theme-coupled (still open)
 
 `assets/js/frontend.js` targets `.shopping-cart-widget-body.wd-scroll` - a
 Woodmart class. On any other theme the mini-cart widget still renders but is not
@@ -91,3 +96,14 @@ moved into the scrolling container.
 
 Fine while every store using this runs Woodmart. It needs a selector filter
 before this ships anywhere else.
+
+## 6. `free_delivery` was cosmetic - FIXED IN 1.1.0
+
+The per-tier checkbox rendered a badge and a line of perk text and nothing else.
+There was no `woocommerce_package_rates` filter or any other shipping code in
+the plugin. It read correctly on bindiya.pk only because the store's own
+free-shipping threshold of Rs 1,500 happened to sit between the 2-pack (1,399)
+and the 3-pack (1,999).
+
+Found while packaging 1.0.0 by grepping for every use of the setting rather than
+trusting that a configurable option was wired to something.

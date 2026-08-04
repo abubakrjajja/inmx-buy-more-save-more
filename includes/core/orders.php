@@ -50,8 +50,19 @@ function inmx_order_qty_map( WC_Order $order ): array {
 }
 
 /**
- * Calculate and save bundle discounts on the order at checkout.
+ * Record what each bundle saved on this order, for the Analytics tab.
+ *
  * Works for both classic checkout and WooCommerce Blocks checkout.
+ *
+ * CHANGED IN 1.1.0. This used to derive the figure from the tier's configured
+ * regular price, which is a number an admin types and can get wrong. On
+ * bindiya.pk it had pack totals typed into a per-item field, which would have
+ * recorded Rs 13,988 of savings on a Rs 1,996 order.
+ *
+ * It is now measured the same way the cart fee is: the line subtotal the
+ * customer would have paid, minus the tier price for that quantity. The number
+ * stored here and the discount line on the order are therefore the same number
+ * by construction, not by two calculations agreeing.
  */
 function inmx_save_order_discounts( WC_Order $order ): void {
 	$map      = inmx_order_qty_map( $order );
@@ -69,13 +80,11 @@ function inmx_save_order_discounts( WC_Order $order ): void {
 			continue;
 		}
 
-		$orig  = (float) ( $tier['original_price'] ?? 0 );
 		$price = (float) ( $tier['price_per_item'] ?? 0 );
-		if ( $orig <= 0 || $price <= 0 || $orig <= $price ) {
+		if ( $price <= 0 ) {
 			continue;
 		}
 
-		$disc_each      = $orig - $price;
 		$total_discount = 0.0;
 		$items_count    = 0;
 
@@ -88,7 +97,7 @@ function inmx_save_order_discounts( WC_Order $order ): void {
 				continue;
 			}
 			$qty             = (int) $item->get_quantity();
-			$total_discount += $disc_each * $qty;
+			$total_discount += max( 0.0, (float) $item->get_subtotal() - ( $price * $qty ) );
 			$items_count    += $qty;
 		}
 
@@ -112,33 +121,50 @@ function inmx_save_order_discounts( WC_Order $order ): void {
 add_action( 'woocommerce_checkout_order_created', 'inmx_save_order_discounts' );
 add_action( 'woocommerce_store_api_checkout_order_processed', 'inmx_save_order_discounts' );
 
+/*
+ * REMOVED IN 1.1.0: the woocommerce_get_order_item_totals filter that injected
+ * "Discount: Offer Name  -Rs X" rows into order totals tables.
+ *
+ * From 1.1.0 the saving is a real WooCommerce fee created at cart level, so it
+ * is already a line on the order, on My Account, in the admin order screen and
+ * in every order email. Keeping the injection as well would have shown the same
+ * discount twice on every one of those surfaces.
+ *
+ * The order meta _inmx_bundle_discounts is still written above, because the
+ * Analytics tab reports per-offer performance and a generic fee line cannot be
+ * attributed back to an offer and tier.
+ */
+
 /**
- * Inject "Discount: Offer Name  -Rs X" rows into every order totals table.
- * One filter covers: front-end order detail, My Account, admin, AND all emails.
- * Rows appear immediately after the subtotal line.
+ * Tint the bundle discount line green wherever WooCommerce renders order totals.
+ *
+ * Cosmetic only. It matches a fee row to a bundle by its stored amount rather
+ * than by parsing the label, so renaming an offer cannot break it.
  */
 add_filter(
 	'woocommerce_get_order_item_totals',
 	function ( array $rows, WC_Order $order ): array {
+
 		$bundles = $order->get_meta( '_inmx_bundle_discounts', true );
-		if ( ! is_array( $bundles ) || empty( $bundles ) ) {
+		if ( ! is_array( $bundles ) || ! $bundles ) {
 			return $rows;
 		}
 
-		$new_rows = [];
-		foreach ( $rows as $key => $row ) {
-			$new_rows[ $key ] = $row;
-			if ( 'cart_subtotal' === $key ) {
-				foreach ( $bundles as $b ) {
-					$slug              = 'inmx_disc_' . sanitize_key( $b['offer_name'] ?? 'bundle' );
-					$new_rows[ $slug ] = [
-						'label' => esc_html( 'Discount: ' . ( $b['offer_name'] ?? 'Bundle' ) ) . ':',
-						'value' => '<strong style="color:#22a85e">-' . wc_price( $b['discount'] ) . '</strong>',
-					];
-				}
+		$amounts = array_map( static fn( $b ) => round( (float) ( $b['discount'] ?? 0 ), 2 ), $bundles );
+
+		foreach ( $order->get_items( 'fee' ) as $fee_id => $fee ) {
+			$total = round( (float) $fee->get_total(), 2 );
+			if ( $total >= 0 || ! in_array( abs( $total ), $amounts, true ) ) {
+				continue;
+			}
+			$key = 'fee_' . $fee_id;
+			if ( isset( $rows[ $key ]['value'] ) ) {
+				$rows[ $key ]['value'] = '<span class="inmx-order-discount" style="color:#22a85e;font-weight:700">'
+					. $rows[ $key ]['value'] . '</span>';
 			}
 		}
-		return $new_rows;
+
+		return $rows;
 	},
 	10,
 	2
