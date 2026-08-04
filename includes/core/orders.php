@@ -56,7 +56,7 @@ function inmx_order_qty_map( WC_Order $order ): array {
  *
  * CHANGED IN 1.1.0. This used to derive the figure from the tier's configured
  * regular price, which is a number an admin types and can get wrong. On
- * bindiya.pk it had pack totals typed into a per-item field, which would have
+ * one live store it had pack totals typed into a per-item field, which would have
  * recorded Rs 13,988 of savings on a Rs 1,996 order.
  *
  * It is now measured the same way the cart fee is: the line subtotal the

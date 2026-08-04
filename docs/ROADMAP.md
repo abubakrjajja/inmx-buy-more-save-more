@@ -73,7 +73,7 @@ budget that belongs to every other site.
 `woocommerce_before_calculate_totals`. Both re-enter totals calculation, which is
 why the `static $busy` re-entrancy guard exists.
 
-It works, and it has been running in production on zensha.pk. It is fragile: the
+It works, and it has been running in production on the origin store. It is fragile: the
 guard makes the second pass a no-op, so a gift change requested during a
 recalculation is dropped rather than applied late. Worth revisiting with
 `woocommerce_cart_loaded_from_session` plus an explicit recalculation, but only
@@ -101,7 +101,7 @@ before this ships anywhere else.
 
 The per-tier checkbox rendered a badge and a line of perk text and nothing else.
 There was no `woocommerce_package_rates` filter or any other shipping code in
-the plugin. It read correctly on bindiya.pk only because the store's own
+the plugin. It read correctly on one live store only because the store's own
 free-shipping threshold of Rs 1,500 happened to sit between the 2-pack (1,399)
 and the 3-pack (1,999).
 

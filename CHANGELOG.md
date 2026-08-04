@@ -26,7 +26,7 @@ keeping it would have shown the discount twice everywhere.
 ### Free Delivery now actually does something
 
 The per-tier "Free Delivery" checkbox previously drew a badge and nothing else.
-There was no shipping code in the plugin at all. On bindiya.pk it happened to
+There was no shipping code in the plugin at all. On one live store it happened to
 look right only because the store's own free-shipping threshold fell between the
 2-pack and the 3-pack.
 
@@ -37,7 +37,7 @@ offer already promised them.
 
 This also closes a hole the discount change would otherwise have opened. Moving
 the saving off the item price raises the subtotal that WooCommerce measures its
-own free-shipping threshold against, which on bindiya would have started giving
+own free-shipping threshold against, which on that store would have started giving
 away free delivery one tier early.
 
 Override with the `inmx_bmsm_grants_free_delivery` filter.
@@ -64,7 +64,7 @@ the Free Gift note beneath it.
 
 `_inmx_bundle_discounts`, which feeds the Analytics tab, was derived from the
 tier's configured regular price - a number an admin types and can get wrong. On
-bindiya.pk that field held pack totals instead of per-item prices, which would
+one store that field held pack totals instead of per-item prices, which would
 have recorded Rs 13,988 of savings on a Rs 1,996 order.
 
 It is now measured the same way the cart fee is, so the number in the report and
@@ -76,7 +76,7 @@ the number on the order are the same by construction.
 
 Initial release. The WPCode snippet "Bundle Upsell System v6" repackaged as a
 plugin with no behaviour change, verified byte-identical to the copy running on
-zensha.pk apart from line endings.
+the origin store apart from line endings.
 
 - 1,664 lines split into core / frontend / admin modules
 - ~12 KB of inline CSS and ~21 KB of inline JS moved out of `wp_head` and

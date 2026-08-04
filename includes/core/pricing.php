@@ -175,7 +175,7 @@ function inmx_add_bundle_discount( WC_Cart $cart ): void {
  *
  * First, before 1.1.0 the per-tier "Free Delivery" checkbox drew a badge and
  * did nothing else - there was no shipping code in the plugin at all. On
- * bindiya.pk it looked correct only by coincidence, because the store's own
+ * one live store it looked correct only by coincidence, because the store's own
  * free-shipping threshold happened to fall between the 2-pack and the 3-pack.
  *
  * Second, moving the saving from the item price to a fee raises the cart
@@ -194,7 +194,7 @@ add_filter( 'woocommerce_shipping_free_shipping_is_available', 'inmx_bundle_free
  * This hooks the Free Shipping method's own availability check rather than
  * filtering the finished rate list, and that choice is deliberate.
  *
- * Measured on bindiya.pk: with the store's paid and free methods both reporting
+ * Measured on a live store: with the store's paid and free methods both reporting
  * available, only the free rate reaches `woocommerce_package_rates` once free
  * shipping qualifies. The paid rate is dropped during rate generation, upstream
  * of every filter, so a rate-list filter cannot restore it - it can only see
