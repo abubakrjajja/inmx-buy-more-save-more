@@ -1,0 +1,10 @@
+.git
+.github
+.gitignore
+.distignore
+docs
+build
+node_modules
+tests
+*.md
+.DS_Store

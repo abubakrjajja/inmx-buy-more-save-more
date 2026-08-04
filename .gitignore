@@ -1,0 +1,12 @@
+# Never commit a token. GitHub secret scanning revokes leaked PATs
+# automatically, which silently breaks updates on every site at once.
+*.env
+.env*
+secrets.*
+build/
+node_modules/
+vendor/
+*.zip
+.DS_Store
+.idea/
+.vscode/
