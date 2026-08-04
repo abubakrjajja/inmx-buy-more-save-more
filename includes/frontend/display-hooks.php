@@ -54,7 +54,7 @@ function inmx_hook_checkout_widget(): void {
 
 /*
  * ─────────────────────────────────────────────────────────────────────
- * Mini cart widget — Woodmart side-cart drawer
+ * Mini cart widget - Woodmart side-cart drawer
  * ─────────────────────────────────────────────────────────────────────
  *
  * Neither WooCommerce hook fires inside Woodmart's .wd-scroll container.
@@ -73,7 +73,7 @@ add_action(
 /*
  * Combined fragment: updates widgets on every AJAX cart event.
  * Each location gets its own compound selector as the fragment key, so jQuery
- * only replaces the exact location's wrapper — never bleeds into other contexts.
+ * only replaces the exact location's wrapper - never bleeds into other contexts.
  */
 add_filter(
 	'woocommerce_add_to_cart_fragments',

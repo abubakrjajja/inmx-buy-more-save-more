@@ -79,7 +79,7 @@ class INMX_BMSM_GitHub_Source implements INMX_BMSM_Update_Source {
 		$code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $code ) {
 			// 404 on a private repo almost always means the token is missing,
-			// expired, or scoped to the wrong repository — not that the release
+			// expired, or scoped to the wrong repository - not that the release
 			// is absent. Say so, because the raw 404 sends people hunting the
 			// wrong problem.
 			$this->log(

@@ -81,7 +81,7 @@ function inmx_render_widget( string $context, int $product_pg_id = 0 ): void {
 }
 
 /**
- * Widget 3 — Goal Circles.
+ * Widget 3 - Goal Circles.
  *
  * A row of product thumbnails filling toward the highest tier, plus one perk line.
  */
@@ -155,7 +155,7 @@ function inmx_render_w3( array $ctx ): void {
 }
 
 /**
- * Widget 4 — Pricing Table.
+ * Widget 4 - Pricing Table.
  *
  * A vertical stepper of every tier, marking each done / next / upcoming.
  */
@@ -306,7 +306,7 @@ function inmx_render_w4( array $ctx ): void {
 			}
 			echo '</div></div>'; // .inmx-tier-price  .inmx-tier-row
 
-			// Circles row — shown only for the 'next' tier card.
+			// Circles row - shown only for the 'next' tier card.
 			if ( 'next' === $state ) {
 				$cap_c   = min( $t_qty, 4 );
 				$filled  = min( $qty, $cap_c );

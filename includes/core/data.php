@@ -346,7 +346,7 @@ function inmx_build_perk_msg( array $tier, int $current_qty, string $cat_name, s
 		return '💝 <strong class="inmx-perk-anim">Best deal applied!</strong> ' . $line . ' 🎉';
 	}
 
-	// 'next' context — high urgency format.
+	// 'next' context - high urgency format.
 	$parts = [];
 	if ( $sale_price > 0 ) {
 		$parts[] = 'unlock <strong class="inmx-perk-anim">'

@@ -97,9 +97,9 @@ The update client does not know GitHub exists. It talks to an
 `INMX_BMSM_Update_Source`, which has three methods: `get_latest()`,
 `download()`, `get_label()`.
 
-To serve updates from your own endpoint — which is what you want once you need
+To serve updates from your own endpoint - which is what you want once you need
 per-site licensing, revocation, or install counts, and what removes the need for
-any site to hold a GitHub credential — write one class implementing that
+any site to hold a GitHub credential - write one class implementing that
 interface and swap it in:
 
 ```php
@@ -117,6 +117,6 @@ continue to work, because none of them are GitHub-specific.
 - Successful lookups are cached for **12 hours**, per site.
 - Failed lookups are cached for **1 hour**, so an unreachable API does not
   trigger an outbound request on every admin page load.
-- Lookups never run on front-end page views — only in wp-admin, WP-Cron and
+- Lookups never run on front-end page views - only in wp-admin, WP-Cron and
   WP-CLI. A customer's page load never waits on GitHub.
 - The check timeout is 10 seconds; downloads get 120.

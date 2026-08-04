@@ -163,7 +163,7 @@ function inmx_render_analytics_section(): void {
 					</span>
 					<span style="font-size:11px;color:#aaa;margin-left:3px"><?php echo (int) $top_count; ?>&times;</span>
 				<?php else : ?>
-					<span style="color:#ccc">—</span>
+					<span style="color:#ccc">-</span>
 				<?php endif; ?>
 			</td>
 		</tr>

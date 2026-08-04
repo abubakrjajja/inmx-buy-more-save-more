@@ -87,7 +87,7 @@ function inmx_manage_gifts( WC_Cart $cart ): void {
 
 /**
  * Priority 10: Apply tier prices via set_price().
- * Never written to DB — recalculated fresh on every cart update.
+ * Never written to DB - recalculated fresh on every cart update.
  */
 add_action( 'woocommerce_before_calculate_totals', 'inmx_apply_prices', 10 );
 
@@ -133,7 +133,7 @@ function inmx_apply_prices( WC_Cart $cart ): void {
 
 /*
  * ─────────────────────────────────────────────────────────────────────
- * Cart strikethrough — original price crossed out per item
+ * Cart strikethrough - original price crossed out per item
  * ─────────────────────────────────────────────────────────────────────
  */
 

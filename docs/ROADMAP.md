@@ -7,7 +7,7 @@ lands as its own change with its own before/after test.
 
 ---
 
-## 1. `inmx_qty_map()` goes stale within a request — pricing correctness
+## 1. `inmx_qty_map()` goes stale within a request - pricing correctness
 
 `includes/core/data.php`
 
@@ -21,7 +21,7 @@ The map is computed once per request and frozen. Every later call returns the
 first result, whatever cart is passed in.
 
 **Why it matters.** WooCommerce runs `calculate_totals()` more than once in a
-single request in ordinary flows — updating a quantity on the cart page, and
+single request in ordinary flows - updating a quantity on the cart page, and
 again after `inmx_manage_gifts()` adds or removes a gift, which itself changes
 cart contents. The second pass reads a map built from the pre-change cart, so
 `inmx_apply_prices()` can select the tier for the old quantity. The customer is
@@ -43,7 +43,7 @@ if ( isset( $cache[ $key ] ) ) return $cache[ $key ];
 
 **Test before shipping.** Cart with N items at tier 1, raise the quantity to
 cross into tier 2 in one update, and confirm the line total matches tier 2 in the
-same request — not on the next page load.
+same request - not on the next page load.
 
 ## 2. Analytics loads every matching order into memory
 
@@ -85,7 +85,7 @@ nonce check that breaks saving.
 
 ## 5. Mini-cart repositioning is theme-coupled
 
-`assets/js/frontend.js` targets `.shopping-cart-widget-body.wd-scroll` — a
+`assets/js/frontend.js` targets `.shopping-cart-widget-body.wd-scroll` - a
 Woodmart class. On any other theme the mini-cart widget still renders but is not
 moved into the scrolling container.
 
