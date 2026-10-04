@@ -102,6 +102,19 @@ function inmx_render_w3( array $ctx ): void {
 		return;
 	}
 
+	/**
+	 * The tier widget 3 aims its circles and its one line at. Default: the highest tier.
+	 * A shop can aim at a nearer one, for example the first tier that gives free delivery.
+	 *
+	 * @param array $best  The highest tier.
+	 * @param array $tiers Every tier of the offer.
+	 * @param int   $qty   Items of the category in the cart.
+	 */
+	$target = apply_filters( 'inmx_bmsm_w3_target_tier', $best, $tiers, $qty );
+	if ( is_array( $target ) && isset( $target['qty'] ) ) {
+		$best = $target;
+	}
+
 	$best_qty  = (int) $best['qty'];
 	$reached   = $qty >= $best_qty;
 	$cap       = 4;
@@ -255,7 +268,7 @@ function inmx_render_w4( array $ctx ): void {
 		if ( 'next' === $state && $needed > 0 ) {
 			echo '<a href="' . esc_url( $add_url ) . '" class="inmx-cta-inline">'
 				. '<span class="inmx-lock-icon inmx-lock--next">' . $svg_lock . '</span>'
-				. 'Add ' . (int) $needed . ' more ' . esc_html( $cat_name ) . ' to unlock'
+				. 'Add ' . (int) $needed . ' more ' . esc_html( inmx_item_label( $cat_name, (int) $needed ) ) . ' to unlock'
 				. '</a>';
 		} elseif ( 'next' === $state && 0 === $needed ) {
 			echo '<div class="inmx-nudge inmx-nudge--ready">✓ Unlocked! Select below to claim 🎉</div>';
@@ -330,8 +343,10 @@ function inmx_render_w4( array $ctx ): void {
 			}
 
 			if ( $gift_name ) {
+				// After the circles row, whose last circle is already a "+" button, a second "+" read as "+ +".
+				$after_cta = 'next' === $state && min( $t_qty, 4 ) > min( $qty, min( $t_qty, 4 ) );
 				echo '<div class="inmx-gift-row">'
-					. '<span class="inmx-gift-plus">+</span>'
+					. ( $after_cta ? '' : '<span class="inmx-gift-plus">+</span>' )
 					. '<img src="' . esc_url( $gift_img ) . '" alt="' . esc_attr( $gift_name ) . '" class="inmx-gift-img" loading="lazy">'
 					. '<span class="inmx-gift-text">Free ' . esc_html( $gift_name ) . '</span>'
 					. '</div>';
@@ -343,6 +358,14 @@ function inmx_render_w4( array $ctx ): void {
 		if ( 'upcoming' === $state && '#' !== $add_url ) {
 			echo '</a>'; // .inmx-card-link
 		}
+
+		/**
+		 * Runs under each tier's card, so a shop can add a line to one tier.
+		 *
+		 * @param array $tier  The tier, with its state ('done', 'next', 'upcoming') and how many are still needed.
+		 * @param array $ctx   The widget's context: qty, tiers, category, offer.
+		 */
+		do_action( 'inmx_bmsm_after_tier_card', $tier, $ctx );
 
 		echo '</div>'; // .inmx-step-body
 		echo '</div>'; // .inmx-step

@@ -3,7 +3,7 @@
  * Plugin Name:       INMX Buy More Save More
  * Plugin URI:        https://inmixio.com/plugins/buy-more-save-more
  * Description:       Quantity-tier bundle offers for WooCommerce. Links a product category to pricing tiers with per-tier gifts, free delivery and custom perk text, and renders upsell widgets on the product page, cart, checkout and side cart.
- * Version:           1.2.0
+ * Version:           1.3.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Requires Plugins:  woocommerce
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * ─────────────────────────────────────────────────────────────────────
  */
 
-define( 'INMX_BMSM_VERSION', '1.2.0' );
+define( 'INMX_BMSM_VERSION', '1.3.0' );
 define( 'INMX_BMSM_FILE', __FILE__ );
 define( 'INMX_BMSM_DIR', plugin_dir_path( __FILE__ ) );
 define( 'INMX_BMSM_URL', plugin_dir_url( __FILE__ ) );

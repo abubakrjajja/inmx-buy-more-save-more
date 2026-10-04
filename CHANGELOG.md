@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.3.0 - 2026-10-04
+
+### A shop can word the offer its own way
+
+Four hooks, each changing nothing unless a shop uses it:
+
+- `inmx_bmsm_item_label` (filter): the item's name by count, so the pricing table can say "Add 1 more hand bindi" where the category is called "Hand Bindis".
+- `inmx_bmsm_perk_msg` (filter): the one-line perk message.
+- `inmx_bmsm_w3_target_tier` (filter): the tier the goal-circles widget aims at. Default is still the highest; a shop can aim at a nearer one so the line does not skip the offer the customer is closest to.
+- `inmx_bmsm_after_tier_card` (action): runs under each tier's card in the pricing table.
+
+### Fixed
+
+- The pricing table's next card showed "+ +": the last circle is a "+" button and the free gift line started with another "+". The gift line drops its "+" after the circles.
+
 ## 1.2.0 - 2026-08-04
 
 ### Analytics now measures whether the upsell worked

@@ -376,7 +376,32 @@ function inmx_cart_key( WC_Cart $cart, int $pid ): ?string {
  *   {gift}      gift product name
  *   {currency}  currency symbol (e.g. Rs)
  */
+/**
+ * The words for the offer's items, by how many: the category name unless a shop says otherwise.
+ * Lets a shop write "1 more hand bindi" where the category is called "Hand Bindis".
+ *
+ * @param string $cat_name The category name.
+ * @param int    $count    How many the sentence is about.
+ */
+function inmx_item_label( string $cat_name, int $count ): string {
+	return (string) apply_filters( 'inmx_bmsm_item_label', $cat_name, $count );
+}
+
+/**
+ * The perk message, after a shop's own wording if it has one.
+ */
 function inmx_build_perk_msg( array $tier, int $current_qty, string $cat_name, string $context ): string {
+	$msg = inmx_build_perk_msg_default( $tier, $current_qty, $cat_name, $context );
+	/**
+	 * @param string $msg         The message as built.
+	 * @param array  $tier        The tier it is about.
+	 * @param int    $current_qty Items of the category in the cart.
+	 * @param string $context     'next' (add more to reach it) or 'active' (reached).
+	 */
+	return wp_kses_post( (string) apply_filters( 'inmx_bmsm_perk_msg', $msg, $tier, $current_qty, $context ) );
+}
+
+function inmx_build_perk_msg_default( array $tier, int $current_qty, string $cat_name, string $context ): string {
 	$min_qty       = (int) ( $tier['qty'] ?? 1 );
 	$sale_price    = (float) ( $tier['price_per_item'] ?? 0 );
 	$regular_price = (float) ( $tier['original_price'] ?? 0 );
