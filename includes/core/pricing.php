@@ -144,14 +144,29 @@ function inmx_add_bundle_discount( WC_Cart $cart ): void {
 		return;
 	}
 
+	foreach ( inmx_bundle_discount_lines( $cart ) as $line ) {
+		$cart->add_fee( $line['label'], -$line['amount'], false );
+	}
+}
+
+/**
+ * The bundle discount lines this cart earns: label and amount, in order.
+ *
+ * The one place the saving is worked out. The cart fee and the side cart's
+ * total both read it, so the two can never show different figures.
+ *
+ * @return array<int, array{label: string, amount: float}>
+ */
+function inmx_bundle_discount_lines( WC_Cart $cart ): array {
 	$bundles = inmx_active_bundles( $cart );
 	if ( ! $bundles ) {
-		return;
+		return [];
 	}
 
 	// A negative fee larger than the cart is how you produce a negative order
 	// total, which WooCommerce will accept and no payment gateway will.
 	$budget = (float) $cart->get_subtotal();
+	$lines  = [];
 
 	foreach ( $bundles as $b ) {
 		if ( $b['discount'] <= 0 ) {
@@ -164,8 +179,13 @@ function inmx_add_bundle_discount( WC_Cart $cart ): void {
 		}
 		$budget -= $amount;
 
-		$cart->add_fee( $b['label'], -$amount, false );
+		$lines[] = [
+			'label'  => $b['label'],
+			'amount' => (float) $amount,
+		];
 	}
+
+	return $lines;
 }
 
 /**

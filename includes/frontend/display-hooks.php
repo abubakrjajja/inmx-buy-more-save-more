@@ -188,3 +188,42 @@ add_filter(
 	10,
 	2
 );
+
+/*
+ * Side cart total.
+ *
+ * Since 1.1.0 the saving is a fee, and WooCommerce's side cart prints only
+ * the subtotal, which is the price before fees. So a buyer with 3 bandanas saw
+ * "Any 3 Bandana Rs 1,707" ticked in the widget and "Subtotal: Rs 2,097" right
+ * under it. When a bundle saving applies, the side cart now shows the subtotal,
+ * each saving line, and what the items cost after the saving. Delivery is
+ * still added at checkout, as before.
+ */
+add_action( 'woocommerce_widget_shopping_cart_total', 'inmx_mini_cart_bundle_total', 5 );
+
+/**
+ * Replace the side cart's bare subtotal with subtotal, saving and the price after it.
+ */
+function inmx_mini_cart_bundle_total(): void {
+	$cart = WC()->cart;
+	if ( ! $cart instanceof WC_Cart ) {
+		return;
+	}
+
+	$lines = inmx_bundle_discount_lines( $cart );
+	if ( ! $lines ) {
+		return;
+	}
+
+	remove_action( 'woocommerce_widget_shopping_cart_total', 'woocommerce_widget_shopping_cart_subtotal', 10 );
+
+	$subtotal = (float) $cart->get_subtotal();
+	$saving   = 0.0;
+
+	echo '<span class="inmx-mini-row"><strong>' . esc_html__( 'Subtotal', 'woocommerce' ) . ':</strong> ' . wp_kses_post( wc_price( $subtotal ) ) . '</span>';
+	foreach ( $lines as $line ) {
+		$saving += $line['amount'];
+		echo '<span class="inmx-mini-row inmx-mini-saving"><span>' . esc_html( $line['label'] ) . '</span> <span>' . wp_kses_post( wc_price( -$line['amount'] ) ) . '</span></span>';
+	}
+	echo '<span class="inmx-mini-row inmx-mini-after"><strong>' . esc_html__( 'Total', 'woocommerce' ) . ':</strong> ' . wp_kses_post( wc_price( max( 0.0, $subtotal - $saving ) ) ) . '</span>';
+}

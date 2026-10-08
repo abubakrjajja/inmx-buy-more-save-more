@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.2 - 2026-10-08
+
+### Fixed: the side cart showed the price before the bundle saving
+
+Since 1.1.0 the saving is a discount line, and WooCommerce's side cart prints
+only the subtotal, which is counted before discount lines. A buyer with 3
+bandanas saw "Any 3 Bandana Rs 1,707" ticked and "Subtotal: Rs 2,097" under it.
+The cart page and checkout always charged the right amount.
+
+When a saving applies, the side cart now shows the subtotal, each saving line,
+and the total after it. The saving is worked out in one function,
+`inmx_bundle_discount_lines()`, which both the cart fee and the side cart read.
+
 ## 1.3.0 - 2026-10-04
 
 ### A shop can word the offer its own way
