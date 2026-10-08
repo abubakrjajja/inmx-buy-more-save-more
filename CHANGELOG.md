@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.3 - 2026-10-08
+- Fixed: the header cart total (Woodmart) showed the price before the bundle saving.
+
 ## 1.3.2 - 2026-10-08
 
 ### Fixed: the side cart showed the price before the bundle saving

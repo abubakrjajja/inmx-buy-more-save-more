@@ -227,3 +227,26 @@ function inmx_mini_cart_bundle_total(): void {
 	}
 	echo '<span class="inmx-mini-row inmx-mini-after"><strong>' . esc_html__( 'Total', 'woocommerce' ) . ':</strong> ' . wp_kses_post( wc_price( max( 0.0, $subtotal - $saving ) ) ) . '</span>';
 }
+
+/*
+ * Woodmart header cart ("3 / Rs 2,097"): the theme prints the cart subtotal,
+ * which is the price before the bundle saving. Woodmart declares this function
+ * only if nobody has, and plugins load before the theme, so this one wins.
+ * On any other theme nothing calls it. (1.3.3)
+ */
+if ( ! function_exists( 'woodmart_cart_subtotal' ) ) {
+	function woodmart_cart_subtotal(): void {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart instanceof WC_Cart ) {
+			return;
+		}
+		$cart   = WC()->cart;
+		$saving = 0.0;
+		foreach ( inmx_bundle_discount_lines( $cart ) as $line ) {
+			$saving += $line['amount'];
+		}
+		$shown = $saving > 0
+			? wc_price( max( 0.0, (float) $cart->get_subtotal() - $saving ) )
+			: $cart->get_cart_subtotal();
+		echo '<span class="wd-cart-subtotal">' . wp_kses_post( $shown ) . '</span>';
+	}
+}
